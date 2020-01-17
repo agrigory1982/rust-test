@@ -17,19 +17,19 @@ fn handle_connection(mut stream: TcpStream) {
     stream.read(&mut buffer).unwrap();
 
     let get = b"GET / HTTP/1.1\r\n";
+    let contents;
+    let response;
 
     if buffer.starts_with(get) {
-        let contents = fs::read_to_string("hello.html").expect("cannot read file");
-        let response = format!("HTTP/1.1 200 OK\r\n\r\n{}", contents);
-
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
+        let status_line = "HTTP/1.1 200 OK\r\n\r\n";
+        contents = fs::read_to_string("hello.html").expect("cannot read file");
+        response = format!("{}{}", status_line, contents);
     } else {
         let status_line = "HTTP/1.1 404 NOT FOUND\r\n\r\n";
-        let contents = fs::read_to_string("404.html").unwrap();
-        let response = format!("{}{}", status_line, contents);
-
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
+        contents = fs::read_to_string("404.html").expect("cannot read file");
+        response = format!("{}{}", status_line, contents);
     }
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.flush().unwrap();
 }
